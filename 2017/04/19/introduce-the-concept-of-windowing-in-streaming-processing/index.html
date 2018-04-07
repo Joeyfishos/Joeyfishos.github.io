@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="window,streaming,bigdata," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="流计算是当前备受关注的一个大数据研究与应用领域，旨在实时或近实时地处理大量无界数据。区别于批处理，流处理中处理的数据集是无界的，所以聚集操作（如 reduce、sum、count 等）无法应用于整个数据集，否则聚集操作的结果可能永远都不会输出。我们需要将无界的数据集切分成一些有界的片段，将聚集操作应用于这些片段，从而能够在无界的数据集上得到持续的聚集操作输出结果，这一切分过程即被称为 window">
+<meta name="keywords" content="window,streaming,bigdata">
+<meta property="og:type" content="article">
+<meta property="og:title" content="流计算核心概念解析之 window">
+<meta property="og:url" content="http://yoursite.com/2017/04/19/introduce-the-concept-of-windowing-in-streaming-processing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="流计算是当前备受关注的一个大数据研究与应用领域，旨在实时或近实时地处理大量无界数据。区别于批处理，流处理中处理的数据集是无界的，所以聚集操作（如 reduce、sum、count 等）无法应用于整个数据集，否则聚集操作的结果可能永远都不会输出。我们需要将无界的数据集切分成一些有界的片段，将聚集操作应用于这些片段，从而能够在无界的数据集上得到持续的聚集操作输出结果，这一切分过程即被称为 window">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://oo9foc9n0.bkt.clouddn.com/uchuhimo.me/blog/images/2017/04/windowing-strategies.jpg">
+<meta property="og:updated_time" content="2017-04-19T21:02:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="流计算核心概念解析之 window">
+<meta name="twitter:description" content="流计算是当前备受关注的一个大数据研究与应用领域，旨在实时或近实时地处理大量无界数据。区别于批处理，流处理中处理的数据集是无界的，所以聚集操作（如 reduce、sum、count 等）无法应用于整个数据集，否则聚集操作的结果可能永远都不会输出。我们需要将无界的数据集切分成一些有界的片段，将聚集操作应用于这些片段，从而能够在无界的数据集上得到持续的聚集操作输出结果，这一切分过程即被称为 window">
+<meta name="twitter:image" content="http://oo9foc9n0.bkt.clouddn.com/uchuhimo.me/blog/images/2017/04/windowing-strategies.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/19/introduce-the-concept-of-windowing-in-streaming-processing/"/>
+
+
+
+
+
+  <title>流计算核心概念解析之 window | Hexo</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/19/introduce-the-concept-of-windowing-in-streaming-processing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">流计算核心概念解析之 window</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-04-19T16:14:54-04:00">
+                2017-04-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/流计算/" itemprop="url" rel="index">
+                    <span itemprop="name">流计算</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>流计算是当前备受关注的一个大数据研究与应用领域，旨在实时或近实时地处理大量无界数据。区别于批处理，流处理中处理的数据集是无界的，所以聚集操作（如 reduce、sum、count 等）无法应用于整个数据集，否则聚集操作的结果可能永远都不会输出。我们需要将无界的数据集切分成一些有界的片段，将聚集操作应用于这些片段，从而能够在无界的数据集上得到持续的聚集操作输出结果，这一切分过程即被称为 window。流计算领域的许多概念、系统设计、实现细节都围绕着 window 展开，window 的支持程度也是我们对众多的流计算框架进行选型的重要依据。要理解 window，我们需要回答以下关键问题：</p>
+<ol>
+<li>如何根据window进行数据划分？</li>
+<li>如何定义在window相关的操作中涉及的时间概念？</li>
+<li>如何输出基于window的操作的处理结果？</li>
+</ol>
+<p>下文将逐一回答这些关键问题，并在最后比较当前较热门的各流计算框架对 window 的支持程度。</p>
+<a id="more"></a>
+<h2 id="如何根据-window-进行数据划分？"><a href="#如何根据-window-进行数据划分？" class="headerlink" title="如何根据 window 进行数据划分？"></a>如何根据 window 进行数据划分？</h2><p>由于流计算中的数据一般具有时间上的先后关系，window 切分一般基于数据的时间关系进行，常见的 window 划分策略包括（见图1[^image1-copyright]）：</p>
+<ul>
+<li>Tumbling window（也称为 fixed window）。Tumbling window 按固定的时间间隔对数据进行划分，将同一时间区间内的数据归为同一 window，每个数据只会属于一个 window；</li>
+<li>Sliding window。Sliding window 与 tumbling window 一样按固定时间间隔划分数据，每个时间区间被称为一个 window slide，而一个 window 区间可以包含多个 window slide，以固定的步长向后滑动，这意味着一个数据可以属于多个 window；</li>
+<li>Session window。Session window 使用数据间的时间间隔进行 window 切分，一旦前后两个数据间的时间间隔超过指定间隔，即将它们划入两个不同的 window，这种 window 划分策略适用于将数据划分为多个在时间上密切相关的 session。</li>
+</ul>
+<p><img src="http://oo9foc9n0.bkt.clouddn.com/uchuhimo.me/blog/images/2017/04/windowing-strategies.jpg" alt="图1 window 策略"><br>图 1：window 策略</p>
+<p>除了以基于时间进行划分外，基于数量进行划分的 window 划分策略也较常见。基于数量的划分策略主要包括 tumbling window 和 sliding window，只是将里面涉及的固定时间间隔替换为固定数量，这里不再赘述。</p>
+<p>在支持 trigger 的系统（如 Google Cloud Dataflow 和 Flink）中，用户可以自定义 window 划分策略。例如，在 Google Cloud Dataflow（以下简称 Dataflow）中，用户可以根据时间、元素数目、数据内容（如是否包含换行符）等进行组合定义新的 trigger，从而根据具体业务场景灵活划分 window。</p>
+<h2 id="如何定义在window相关的操作中涉及的时间概念？"><a href="#如何定义在window相关的操作中涉及的时间概念？" class="headerlink" title="如何定义在window相关的操作中涉及的时间概念？"></a>如何定义在window相关的操作中涉及的时间概念？</h2><p>当我们基于时间对数据进行划分时，我们是应该使用数据产生时的时间，还是数据进入系统时的时间，抑或是数据被某一操作处理时的时间？鉴于 window 操作涉及的时间概念如此复杂多样，流计算系统一般允许用户指定时间策略。常见的时间策略包含以下几种：</p>
+<ul>
+<li>Event time。Event time 指以数据自带的时间信息为作为时间基准，由于许多实时数据带有时间戳（如物联网设备的定时心跳数据），而围绕数据自带时间戳进行数据处理也是许多日志处理逻辑、周期统计逻辑的关键所在，event time 在流处理领域有着非常广泛的应用；</li>
+<li>Processing time。Processing time 指以数据实际被处理的时间作为时间基准，由于实现简单，几乎所有流计算系统都提供支持，但由于数据什么时候被处理依赖于具体的系统执行情况，processing time 基本只用于 event time 不可用的情况（如数据不带时间信息、系统不支持 event time 等）或与 event time 配合使用；</li>
+<li>Ingress time。Ingress time 指以数据进入流计算系统的时间作为时间基准，由于可以应用于无时间戳的数据、系统处理逻辑上类似于 event time 且能一定程度上避免 event time 数据乱序的问题，ingress time 在特定场景下可作为 event time 的合理替代方案。</li>
+</ul>
+<p>由于 event time 能最精确地描述大量业务场景下的时间概念，支持 event time 能极大提升流计算系统的业务支持能力。但 event time 是流计算领域的“潘多拉魔盒”，包含许多复杂而微妙的问题。由于 event time 和数据处理时的时刻没有顺序对应关系，因此需要处理数据乱序问题。我们需要在下一个 window 的数据已经到达的情况下继续保持上一 window，以等待乱序数据的到达。由于数据集是无界的，而乱序数据什么时候到达并没有任何的保证，因此可能需要保持住所有的 window，这显然是不现实的。解决这一问题的常见方案是使用 watermark，即在数据源发送数据的过程中，在适当的位置插入 watermark 时间戳，表示在该 watermark 之后到达的数据中不包含早于时间戳所标记的时刻之前的数据，如此一来在接收到 watermark 时，早于 watermark 时间戳的 window 就能够被处理和清理。但在实际情况中，watermark 往往是不精确的，即在 watermark 到达后仍会有早于该时间戳的数据到达，造成 late data 问题。而 late data 的处理方式在不同系统中千差万别，存在着直接丢弃、更新之前 window 的状态、覆盖之前 window 的状态等多种处理方式，这里不再一一详述。</p>
+<h2 id="如何输出基于window的操作的处理结果？"><a href="#如何输出基于window的操作的处理结果？" class="headerlink" title="如何输出基于window的操作的处理结果？"></a>如何输出基于window的操作的处理结果？</h2><p>由于不同系统的 window 切分策略以及对 late data 的处理策略不同，同一 window 可能会出现一或多个输出结果的情况。在不支持 trigger 的系统中，如果直接丢弃 late data 或使用 late data 持续更新 window 输出结果，那么通常 window 处理结果是单输出的。一旦支持 trigger，则可能会出现在一个 window 中多次触发输出的情况，而使用 late data 覆盖或追加先前 window 结果的策略也会导致在 late data 出现时 window 多输出的情况。除了 Dataflow 和 Flink 外，现存的大部分系统是 window 单输出的。</p>
+<h2 id="各流计算框架对window支持程度对比"><a href="#各流计算框架对window支持程度对比" class="headerlink" title="各流计算框架对window支持程度对比"></a>各流计算框架对window支持程度对比</h2><p>下表总结了各热门的流计算框架对window支持程度的对比：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>Google Cloud Dataflow</th>
+<th>Apache Flink</th>
+<th>Apache Storm</th>
+<th>Spark Structured Streaming</th>
+<th>Spark Streaming</th>
+<th>Kafka Streams</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>版本</td>
+<td>–[^dataflow-version]</td>
+<td>1.1</td>
+<td>1.0.0</td>
+<td>Alpha</td>
+<td>2.0.0</td>
+<td>0.10.0</td>
+</tr>
+<tr>
+<td>Tumbling window</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+</tr>
+<tr>
+<td>Sliding window</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+</tr>
+<tr>
+<td>Session window</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+</tr>
+<tr>
+<td>Count-based window</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+</tr>
+<tr>
+<td>Trigger</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+</tr>
+<tr>
+<td>Event time</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><em>不支持</em></td>
+<td><strong>支持</strong></td>
+</tr>
+<tr>
+<td>Processing time</td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+<td><em>不支持</em></td>
+<td><strong>支持</strong></td>
+<td><strong>支持</strong></td>
+</tr>
+<tr>
+<td>Ingress time</td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><em>不支持</em></td>
+<td><strong>支持</strong></td>
+</tr>
+<tr>
+<td>Window输出</td>
+<td>多输出</td>
+<td>多输出</td>
+<td>单输出</td>
+<td>单输出</td>
+<td>单输出</td>
+<td>单输出</td>
+</tr>
+</tbody>
+</table>
+<p>可以看到，目前对 window 支持最完善的流计算框架是 Dataflow 和 Flink；Storm 在最新的 1.0.0 中加入内置的 window 支持，而 Kafka Streams 则是随 Kafka 0.10.0 版本一同释出的新流计算框架，两者对 window 的支持都较为完善，但是否稳定可靠则需要时间的验证；而 Spark 原有的流计算框架 Spark Streaming 由于只支持基于 mini-batch 的 processing-time window，对 window 的支持一直很薄弱，随 Spark 2.0.0 释出的 Structured Streaming 旨在支持 event-time window，补足 Spark 在流处理上的能力，但仍然处于相当早期的阶段，各种 window 特性的支持都有所缺失。鉴于流处理领域对于优秀流处理框架的旺盛需求，未来一定会有更多对 window 支持更完善的流处理框架涌现出来，让我们拭目以待。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a href="https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-102" target="_blank" rel="noopener">The world beyond batch: Streaming 102</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/windows.html" target="_blank" rel="noopener">Apache Flink 1.1 Documentation: Windows</a></li>
+<li><a href="http://docs.confluent.io/3.0.0/streams/concepts.html" target="_blank" rel="noopener">Concepts — Confluent Platform 3.0.0 documentation</a></li>
+<li><a href="http://docs.confluent.io/3.0.0/streams/developer-guide.html" target="_blank" rel="noopener">Developer Guide — Confluent Platform 3.0.0 documentation</a></li>
+<li><a href="http://storm.apache.org/releases/1.0.0/Windowing.html" target="_blank" rel="noopener">Windowing Support in Core Storm</a></li>
+<li><a href="http://spark.apache.org/docs/latest/streaming-programming-guide.html" target="_blank" rel="noopener">Spark Streaming - Spark 2.0.0 Documentation</a></li>
+<li><a href="http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html" target="_blank" rel="noopener">Structured Streaming Programming Guide - Spark 2.0.0 Documentation</a></li>
+</ul>
+<p>[^image1-copyright]: 本图摘自 <a href="https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-102，版权归原作者所有" target="_blank" rel="noopener">https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-102，版权归原作者所有</a><br>[^dataflow-version]: Dataflow 为 Google 提供的云服务，由于没有开源，并不清楚其内部版本号</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/window/" rel="tag"># window</a>
+          
+            <a href="/tags/streaming/" rel="tag"># streaming</a>
+          
+            <a href="/tags/bigdata/" rel="tag"># bigdata</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/18/git-cheat-sheet/" rel="next" title="Git Cheat Sheet">
+                <i class="fa fa-chevron-left"></i> Git Cheat Sheet
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/08/determinat-vs-deterministic/" rel="prev" title="deterministic 和 determinat 有什么区别？">
+                deterministic 和 determinat 有什么区别？ <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">John Doe</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何根据-window-进行数据划分？"><span class="nav-number">1.</span> <span class="nav-text">如何根据 window 进行数据划分？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何定义在window相关的操作中涉及的时间概念？"><span class="nav-number">2.</span> <span class="nav-text">如何定义在window相关的操作中涉及的时间概念？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何输出基于window的操作的处理结果？"><span class="nav-number">3.</span> <span class="nav-text">如何输出基于window的操作的处理结果？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#各流计算框架对window支持程度对比"><span class="nav-number">4.</span> <span class="nav-text">各流计算框架对window支持程度对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="blog,Hexo,Travis,GitHub," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="由于博客的源码和生成站点位于不同的代码仓库中（源码位于 uchuhimo/uchuhimo.me，生成的静态站点位于 uchuhimo/uchuhimo.github.io，即个人 GitHub Pages 的仓库），文章的发布过程需要提交两次。作为拥有懒惰这种美德的程序员，自然会开始折腾只需要提交一次、博客就自动部署到 GitHub Pages 上的方法——这里就轮到 Travis 登场了。 接">
+<meta name="keywords" content="blog,Hexo,Travis,GitHub">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 Travis 自动部署博客到 Github Pages">
+<meta property="og:url" content="http://yoursite.com/2017/04/15/continuous-deployment-blog-to-github-pages-with-travis/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="由于博客的源码和生成站点位于不同的代码仓库中（源码位于 uchuhimo/uchuhimo.me，生成的静态站点位于 uchuhimo/uchuhimo.github.io，即个人 GitHub Pages 的仓库），文章的发布过程需要提交两次。作为拥有懒惰这种美德的程序员，自然会开始折腾只需要提交一次、博客就自动部署到 GitHub Pages 上的方法——这里就轮到 Travis 登场了。 接">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2017-04-16T06:23:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 Travis 自动部署博客到 Github Pages">
+<meta name="twitter:description" content="由于博客的源码和生成站点位于不同的代码仓库中（源码位于 uchuhimo/uchuhimo.me，生成的静态站点位于 uchuhimo/uchuhimo.github.io，即个人 GitHub Pages 的仓库），文章的发布过程需要提交两次。作为拥有懒惰这种美德的程序员，自然会开始折腾只需要提交一次、博客就自动部署到 GitHub Pages 上的方法——这里就轮到 Travis 登场了。 接">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/15/continuous-deployment-blog-to-github-pages-with-travis/"/>
+
+
+
+
+
+  <title>使用 Travis 自动部署博客到 Github Pages | Hexo</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/15/continuous-deployment-blog-to-github-pages-with-travis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 Travis 自动部署博客到 Github Pages</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-04-15T21:12:50-04:00">
+                2017-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/创世记/" itemprop="url" rel="index">
+                    <span itemprop="name">创世记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>由于博客的源码和生成站点位于不同的代码仓库中（源码位于 <a href="https://github.com/uchuhimo/uchuhimo.me" target="_blank" rel="noopener">uchuhimo/uchuhimo.me</a>，生成的静态站点位于 <a href="https://github.com/uchuhimo/uchuhimo.github.io" target="_blank" rel="noopener">uchuhimo/uchuhimo.github.io</a>，即个人 GitHub Pages 的仓库），文章的发布过程需要提交两次。作为拥有懒惰这种美德的程序员，自然会开始折腾只需要提交一次、博客就自动部署到 GitHub Pages 上的方法——这里就轮到 Travis 登场了。</p>
+<p>接下来，我会先介绍自动部署的原理，再讲解搭建的过程。</p>
+<a id="more"></a>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>Travis 为 GitHub 上的开源项目提供免费的持续集成（CI）服务，只要你向指定仓库提交了代码，Travis 就会根据配置自动运行 CI 任务。利用这个特性，我们可以做到在一次提交过程中触发如下流程：</p>
+<ul>
+<li>内容编辑完成，向博客的源码仓库 push 代码</li>
+<li>GitHub 通过 hook 告诉 Travis 有新的提交，Travis 启动新的 CI 任务</li>
+<li>在 CI 任务中，代码被 clone 到 Travis 的构建服务器上</li>
+<li>构建服务器准备好 Node.js 的运行环境，运行 Hexo 的生成命令，并将生成的静态站点 push 到 GitHub Pages 的仓库中，博客部署完成</li>
+</ul>
+<p>这个过程中的难点在于如何给予 Travis push 你的 GitHub Pages 仓库的权限。有两种方法可以获得 push 权限：</p>
+<ul>
+<li>SSH 私钥：只要在 GitHub 上配了相应公钥，就可以通过 SSH 进行 push</li>
+<li>Personal access token：只要在 GitHub 上生成了 personal access token，就可以通过 HTTPS 进行 push</li>
+</ul>
+<p>但是，无论是使用上述的哪种方法，SSH 私钥 / personal access token 都不能出现在 Travis 的配置文件里，因为 Travis 的配置文件（即 <code>.travis.yml</code>）会出现在博客的源码仓库里，这意味着任何能访问你提交历史的路人（对于 GitHub 的公开项目来说，意味着<strong>任何人</strong>）都能获取到它们并用来向你的仓库进行任意提交——这是灾难性的（顺带一提，GitHub 如果发现你的代码仓库中含有 personal access token，会自动删除相应token，因此向仓库提交 personal access token 的行为并不会带来风险，只是没有意义而已，因为 token 会直接失效）。因此，我们需要使用 Travis 客户端对 SSH 私钥 / personal access token 进行加密，然后在 CI 任务中解密并使用它们。</p>
+<p>原理解释先到这里，下面我们直接动手做吧~</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ul>
+<li>注册 Travis 并将 Github Pages 的源码项目加入 Travis</li>
+<li>准备一个 Github 的 personal access token</li>
+<li><p>安装 Travis 客户端（加入了惯例的“换国内源”环节，不用谢我^_^）：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># install rvm</span></span><br><span class="line">gpg --keyserver hkp://keys.gnupg.net:80 --recv-keys D39DC0E3</span><br><span class="line">\curl -sSL https://get.rvm.io | bash -s stable</span><br><span class="line"><span class="built_in">source</span> /home/uchuhimo/.rvm/scripts/rvm</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"ruby_url=https://cache.ruby-china.org/pub/ruby"</span> &gt; ~/.rvm/user/db</span><br><span class="line"></span><br><span class="line"><span class="comment"># install ruby</span></span><br><span class="line">rvm install 2.4.0</span><br><span class="line">rvm use 2.4.0 --default</span><br><span class="line"></span><br><span class="line"><span class="comment"># configure gem</span></span><br><span class="line">gem sources --add https://gems.ruby-china.org/ --remove http://rubygems.org/</span><br><span class="line"></span><br><span class="line"><span class="comment"># install travis</span></span><br><span class="line">gem install travis</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="配置-Travis"><a href="#配置-Travis" class="headerlink" title="配置 Travis"></a>配置 Travis</h2><ul>
+<li>在博客的源码项目下新建 <code>.travis.yml</code>：<code>touch .travis.yml</code></li>
+<li>加密上文生成的 personal access token：<code>travis encrypt GITHUB_TOKEN=&quot;&lt;personal-access-token&gt;&quot; --add</code></li>
+<li><p>在 <code>.travis.yml</code> 中添加如下内容（记得替换变量）：</p>
+  <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">language:</span> <span class="string">node_js</span></span><br><span class="line"><span class="attr">node_js:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">"7"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">before_deploy:</span></span><br><span class="line"><span class="bullet">  -</span> <span class="string">hexo</span> <span class="string">generate</span> <span class="comment"># generate static site</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line"><span class="attr">  provider:</span> <span class="string">pages</span> <span class="comment"># deploy to GitHub Pages</span></span><br><span class="line"><span class="attr">  skip_cleanup:</span> <span class="literal">true</span> <span class="comment"># don't clean generated site</span></span><br><span class="line"><span class="attr">  github_token:</span> <span class="string">$GITHUB_TOKEN</span> <span class="comment"># provide the encrypted token</span></span><br><span class="line"><span class="attr">  on:</span></span><br><span class="line"><span class="attr">    branch:</span> <span class="string">master</span></span><br><span class="line"><span class="attr">  repo:</span> <span class="string">&lt;username&gt;/&lt;github-pages-repo-name&gt;</span> <span class="comment"># optional, defaults to current repo</span></span><br><span class="line"><span class="attr">  local_dir:</span> <span class="string">public</span> <span class="comment"># optional, defaults to the current directory</span></span><br><span class="line"><span class="attr">  target_branch:</span> <span class="string">master</span> <span class="comment"># optional, defaults to "gh-pages"</span></span><br><span class="line"><span class="attr">  fqdn:</span> <span class="string">&lt;custom-domain-url&gt;</span> <span class="comment"># optional</span></span><br><span class="line"><span class="attr">  project_name:</span> <span class="string">&lt;project-name&gt;</span> <span class="comment"># optional, defaults to value of fqdn or repo</span></span><br><span class="line"><span class="attr">  email:</span> <span class="string">&lt;committer-email&gt;</span> <span class="comment"># optional, defaults to "deploy@travis-ci.org"</span></span><br><span class="line"><span class="attr">  name:</span> <span class="string">&lt;committer-name&gt;</span> <span class="comment"># optional, defaults to "Deployment Bot"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>提交更改即可触发 Travis 自动更新 Github Pages</p>
+</li>
+<li>到 <code>https://travis-ci.org/&lt;username&gt;/&lt;blog-source-repo-name&gt;</code> 页面查看构建是否成功</li>
+</ul>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>在最终采用上述方案之前，我也看了网上现有的方案，感觉都多多少少有些繁琐，因此在自己折腾出来后才决定分享出来，供大家参考。</p>
+<p>下面是我看到的几个比较靠谱的方案，以供对比：</p>
+<ul>
+<li><p>基于 SSH 的方案：<a href="https://zespia.tw/blog/2015/01/21/continuous-deployment-to-github-with-travis/" target="_blank" rel="noopener">用 Travis CI 自動部署網站到 GitHub</a></p>
+<p>  这是 Hexo 作者 tommy351 自己部署 Hexo 的官方网站用的方案，感觉看完都有点不想折腾了，真的很繁琐。</p>
+</li>
+<li><p>基于 personal access token 的方案：<a href="http://notes.iissnan.com/2016/publishing-github-pages-with-travis-ci/" target="_blank" rel="noopener">使用 Travis CI 自动更新 GitHub Pages</a></p>
+<p>  这是 NexT 作者 iissnan 部署 NexT 文档的方案，使用的和我一样是 personal access token，iissnan 自己撸了提交到 GitHub Pages 的命令，而我直接使用了 Travis 提供的部署插件，会更简单和易维护一些（其实真正的原因是我懒）。另一点不同是 iissnan 使用了 gulp 管理构建过程，而我直接使用 Hexo 的命令进行构建，因此构建的命令会有所不同。</p>
+</li>
+</ul>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a href="https://docs.travis-ci.com/user/deployment/pages/" target="_blank" rel="noopener">GitHub Pages Deployment - Travis CI</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/blog/" rel="tag"># blog</a>
+          
+            <a href="/tags/Hexo/" rel="tag"># Hexo</a>
+          
+            <a href="/tags/Travis/" rel="tag"># Travis</a>
+          
+            <a href="/tags/GitHub/" rel="tag"># GitHub</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/11/genesis/" rel="next" title="如何使用 Hexo 和 GitHub Pages 搭建这个博客">
+                <i class="fa fa-chevron-left"></i> 如何使用 Hexo 和 GitHub Pages 搭建这个博客
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/18/git-cheat-sheet/" rel="prev" title="Git Cheat Sheet">
+                Git Cheat Sheet <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">John Doe</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#原理"><span class="nav-number">1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置-Travis"><span class="nav-number">3.</span> <span class="nav-text">配置 Travis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">4.</span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
