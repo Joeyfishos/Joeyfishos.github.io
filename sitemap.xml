@@ -2,13 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://yoursite.com/fack/index.html</loc>
-    
-    <lastmod>2018-04-07T21:16:37.047Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/categories/index.html</loc>
     
     <lastmod>2018-04-07T18:09:59.390Z</lastmod>
@@ -37,7 +30,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/google2d99c0ca12d2cd90.html</loc>
+    <loc>http://yoursite.com/404.html</loc>
     
     <lastmod>2017-10-29T12:15:44.000Z</lastmod>
     
@@ -51,7 +44,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/404.html</loc>
+    <loc>http://yoursite.com/google2d99c0ca12d2cd90.html</loc>
     
     <lastmod>2017-10-29T12:15:44.000Z</lastmod>
     
@@ -65,6 +58,13 @@
   </url>
   
   <url>
+    <loc>http://yoursite.com/2017/04/11/categories/%E5%88%9B%E4%B8%96%E7%BA%AA/sdfds/</loc>
+    
+    <lastmod>2017-04-22T07:02:00.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2017/04/11/genesis/</loc>
     
     <lastmod>2017-04-22T07:02:00.000Z</lastmod>
@@ -73,13 +73,6 @@
   
   <url>
     <loc>http://yoursite.com/2017/04/11/hello/</loc>
-    
-    <lastmod>2017-04-22T07:02:00.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2017/04/11/categories/%E5%88%9B%E4%B8%96%E7%BA%AA/sdfds/</loc>
     
     <lastmod>2017-04-22T07:02:00.000Z</lastmod>
     
