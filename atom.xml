@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-05-09T01:04:05.000Z</updated>
+  <updated>2018-04-09T03:11:37.487Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://yoursite.com/2018/04/08/fork/"/>
+    <id>http://yoursite.com/2018/04/08/fork/</id>
+    <published>2018-04-09T03:09:16.908Z</published>
+    <updated>2018-04-09T03:11:37.487Z</updated>
+    
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><p>sadsad</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;link rel=&quot;stylesheet&quot; class=&quot;aplayer-secondary-style-marker&quot; href=&quot;\assets\css\APlayer.min.css&quot;&gt;&lt;script src=&quot;\assets\js\APlayer.min.js&quot; cla
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>deterministic 和 determinat 有什么区别？</title>
@@ -30,6 +51,8 @@
       &lt;p&gt;deterministic 和 determinat 翻译过来都是“确定性的”，但这并不代表它们可以互相混用，在并行计算的语境下，它们有着一些根本的差别。&lt;/p&gt;
     
     </summary>
+    
+      <category term="撒旦" scheme="http://yoursite.com/categories/%E6%92%92%E6%97%A6/"/>
     
     
   </entry>
