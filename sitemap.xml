@@ -16,20 +16,6 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2018/04/07/ds/</loc>
-    
-    <lastmod>2018-04-07T18:01:38.693Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/tags/index.html</loc>
-    
-    <lastmod>2017-10-29T12:15:44.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/404.html</loc>
     
     <lastmod>2017-10-29T12:15:44.000Z</lastmod>
@@ -37,7 +23,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/README.html</loc>
+    <loc>http://yoursite.com/tags/index.html</loc>
     
     <lastmod>2017-10-29T12:15:44.000Z</lastmod>
     
@@ -51,6 +37,13 @@
   </url>
   
   <url>
+    <loc>http://yoursite.com/README.html</loc>
+    
+    <lastmod>2017-10-29T12:15:44.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2017/05/08/determinat-vs-deterministic/</loc>
     
     <lastmod>2017-05-09T01:04:05.000Z</lastmod>
@@ -58,21 +51,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2017/04/11/hello/</loc>
-    
-    <lastmod>2017-04-22T07:02:00.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/2017/04/11/genesis/</loc>
-    
-    <lastmod>2017-04-22T07:02:00.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2017/04/11/categories/%E5%88%9B%E4%B8%96%E7%BA%AA/sdfds/</loc>
     
     <lastmod>2017-04-22T07:02:00.000Z</lastmod>
     

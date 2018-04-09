@@ -1,8 +1,8 @@
 header {
-  width: 90%;
+  width: 100%;
 }
 .container .main-inner {
-  width: 90%;
+  width: 100%;
 }
 .content-wrap {
   width: calc(100% - 260px);
@@ -1962,7 +1962,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #ff8bdf;
+  background: #5274ff;
 }
 .links-of-blogroll {
   font-size: 13px;
